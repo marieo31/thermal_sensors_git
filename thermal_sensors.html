@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<html>
+<title>InterfaceKit Example</title>
+<script src="js/jquery-2.1.4.min.js"></script>
+<script src="js/sha256.min.js"></script>
+<script src="js/phidget22.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</html>
+<script src="js/thermal_sensors.js"></script>
+
+<html>
+    <body>
+        <fieldset id="Attach">
+            <table>
+                <tr>
+                    <td><label>Attached:</label></td><td colspan='2'><label id='attachLabel'></label></td>
+                </tr>
+                <tr>
+                    <td><label>Product:</label></td><td><label id='versionLabel'></label></td>
+                </tr>
+                <tr>
+                    <td><label>Serial Number:</label></td><td><label id='serialLabel'></label></td>
+                </tr>		
+            </table>
+        </fieldset>
+        <fieldset id="voltageField">
+            <legend><label >Voltage Inputs</label></legend>
+            <table>
+                <tr>
+                    <td style="text-align:center">0</td>
+                    <td style="text-align:center">1</td>
+                    <td style="text-align:center">2</td>
+                    <td style="text-align:center">3</td>
+                    <td style="text-align:center">4</td>
+                    <td style="text-align:center">5</td>
+                    <td style="text-align:center">6</td>
+                    <td style="text-align:center">7</td>           
+                </tr>
+                <tr>
+                    <td><input readonly type='text' size="7" id='vi_voltage_0' value="0"></td>
+                    <td><input readonly type='text' size="7" id='vi_voltage_1' value="0"></td>
+                    <td><input readonly type='text' size="7" id='vi_voltage_2' value="0"></td>
+                    <td><input readonly type='text' size="7" id='vi_voltage_3' value="0"></td>
+                    <td><input readonly type='text' size="7" id='vi_voltage_4' value="0"></td>
+                    <td><input readonly type='text' size="7" id='vi_voltage_5' value="0"></td>
+                    <td><input readonly type='text' size="7" id='vi_voltage_6' value="0"></td>
+                    <td><input readonly type='text' size="7" id='vi_voltage_7' value="0"></td>
+                </tr>
+            </table>
+        </fieldset>
+        <fieldset id="Settings">
+            <legend><label >Settings</label></legend>   
+            <table>
+                <tr>
+                    <td><label >Data Interval [sec]</label></td>
+                    <td><input type='text'  id='di' size='7' value='5'></td>
+                    <td><input type='submit' size='9'  id='diButton' onclick='setDI()' value='Set'></td>
+                </tr>
+                <tr>
+                    <td><label >File label</label></td>
+                    <td><input type='text'  id='flabel' size='7' value=''></td>
+                    <td><input type='submit' size='9'  id='flabelButton' onclick='setflabel()' value='Set'></td>
+                </tr>                
+            </table>         
+
+        </fieldset>         
+        <fieldset id="tempField">
+            <legend><label >Temperature Inputs</label></legend>
+            <table>
+                <tr>
+                    <td style="text-align:center">0</td>
+                    <td style="text-align:center">1</td>
+                    <td style="text-align:center">2</td>
+                    <td style="text-align:center">3</td>
+                    <td style="text-align:center">4</td>
+                    <td style="text-align:center">5</td>
+                    <td style="text-align:center">6</td>
+                    <td style="text-align:center">7</td>           
+                </tr>
+                <tr>
+                    <td><input readonly type='text' size="7" id='vi_temp_0' value="0"></td>
+                    <td><input readonly type='text' size="7" id='vi_temp_1' value="0"></td>
+                    <td><input readonly type='text' size="7" id='vi_temp_2' value="0"></td>
+                    <td><input readonly type='text' size="7" id='vi_temp_3' value="0"></td>
+                    <td><input readonly type='text' size="7" id='vi_temp_4' value="0"></td>
+                    <td><input readonly type='text' size="7" id='vi_temp_5' value="0"></td>
+                    <td><input readonly type='text' size="7" id='vi_temp_6' value="0"></td>
+                    <td><input readonly type='text' size="7" id='vi_temp_7' value="0"></td>
+                </tr>
+            </table>
+        </fieldset>    
+   
+        <fieldset>
+            <legend><label>Logging</label></legend>
+            <table>
+                <tr>
+                    <td><input type="submit" size='32' onclick="startLOG()" value="Start"></input></td>
+                    <td></td><td></td><td></td><td></td>
+                    <td><input type="submit" size='12' onclick="stopLOG()" value="Stop"></input></td>
+                    <td></td><td></td><td></td><td></td>
+                    <td><input type="submit" size='12' onclick="clearLOG()" value="Clear"></input></td>
+                    <td></td><td></td><td></td><td></td>
+                    <td><input type="submit" size='12' onclick="saveLOG()" value="Download"></input></td>
+                </tr>                    
+            </table>
+            <div id="plot"></div>
+        </fieldset>
+        <fieldset id="errorField" hidden>
+            <legend>Errors</legend>
+            <table id="errorTable">
+                <col width="100"><col width="100"><col width="400">
+                <thead><tr>
+                    <th align='left'>Time</th>
+                    <th align='center'>Error #</th>
+                    <th align='center'>Desc</th>
+                    <th><input type='submit' size='9' onclick="$('#errorTable tbody').remove();" value='Clear'></th>
+                </tr></thead>
+            </table>
+        </fieldset>
+    </body>
+</html>
