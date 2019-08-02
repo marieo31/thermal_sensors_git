@@ -1,9 +1,11 @@
 
 // Variables
 var p_vi = [];  // List of chanels
+var nb_ch = 2;  // nb of active chanels
 var logging;    // boolean to enable data saving
 var data = []   // List of datasets
-var nb_ch = 2;  // nb of active chanels
+var traces = [] // List of traces for the plots
+var time_unit = "sec"   // units of the plot
 
 // Calibration coefficients for each chanel
 var a_calib = [222.2, 222.2];
@@ -12,29 +14,7 @@ var b_calib = [-61.111, -61.111];
 // Establish the connection
 $(document).ready(function() {
         var conn = new phidget22.Connection(8989, 'localhost');
-
-        // var ch = new phidget22.VoltageRatioInput();
-        // ch.onAttach = onAttach;
-        // ch.onError = onError;
-        // // ch.onPropertyChange = propChange;
-        // ch.setIsHubPortDevice(true);
-        // ch.setHubPort(0);
-        // // ch.setChannel(0) 
-
-        // conn.connect().then(function () {
-        //     console.log('connected');
-        //     ch.open().then(function (ch) {
-        //         console.log('channel open');
-        //     }).catch(function (err) {
-        //         console.log('failed to open the channel:' + err);
-        //     });
-        // }).catch(function (err) {
-        //     alert('failed to connect to server:' + err);
-        // });;
-
-
         console.log(conn)
-        // console.log(ch)
 
         // Create the chanels
         for(i=0;i<nb_ch;i++)
@@ -43,6 +23,7 @@ $(document).ready(function() {
             p_vi.push(new phidget22.VoltageRatioInput());
             // Initialize the datasets for each chanel
             data.push([])
+            traces.push([])
         }
 
         // Attach the handler and define the properties
@@ -76,92 +57,6 @@ $(document).ready(function() {
         console.log(p_vi)
     });
 
-
-function propChange(prop) {
-    console.log(propChange)
-    if (prop === 'DataInterval')
-        $('#di').val(this.getDataInterval());
-
-    if (prop === 'VoltageRatioChangeTrigger')
-        $('#ct').val(this.getVoltageRatioChangeTrigger());
-
-    if (prop === 'BridgeEnabled')
-        $('#enableBox').prop("checked",this.getBridgeEnabled());
-
-    if (prop === 'BridgeGain')
-        $('#gainCombo').val(this.getBridgeGain());
-
-    if (prop === 'SensorType')
-        $('#sensorCombo').val(this.getSensorType());
-}    
-function onAttach(ch) {
-	console.log(ch + ' attached');
-	// phid = ch;
-	// setLabel('attachLabel',ch.getDeviceClassName() + ' - ' + ch.getChannelClassName() + ' (Channel ' + ch.getChannel() + ')');
-	// setLabel('serialLabel',ch.getDeviceSerialNumber());
-	// setLabel('versionLabel',ch.getDeviceSKU() + ' ver.' + ch.getDeviceVersion());
-	
-	// if(ch.getDeviceClass() == phidget22.DeviceClass.VINT) 
-	// 	setLabel('hubPortLabel',ch.getHubPort());
-	// else
-	// 	setLabel('hubPortLabel','N/A');
-
-	// phid.onVoltageRatioChange = ratioChange;
-	// phid.onSensorChange = svChange;
-	// phid.onError = onError;
-    // phid.onPropertyChange = propChange;
-
-	
-	// we are forcing the initialization of the DataInterval to 512
-	// $('#di').val(phid.getDataInterval());
-	// $('#di').val(+1000);
-	// $('#ct').val(phid.getVoltageRatioChangeTrigger());
-
-	// switch(phid.getDeviceID()){
-		
-	//     case phidget22.DeviceID.PN_1046:
-	// 		phid.setBridgeGain($('#gainCombo').val());
-	// 		$('#sensorLabel').hide();
-	// 		$('#sensorCombo').hide();
-	// 		$('#sensorValue').hide();
-	// 		$('#unit').hide();
-	// 		$("#gainCombo option[value='2']").remove();
-	// 		$("#gainCombo option[value='3']").remove();
-	// 		// Adding some settings for the load cell device
-	// 		$("#gainCombo option[value='1']").remove();
-	// 		break;
-	//     case phidget22.DeviceID.PN_DAQ1500:
-	//         $('#gainCombo').val(phid.getBridgeGain());
-	// 		$('#enableLabel').hide();
-	// 		$('#enableBox').hide();
-	// 		$('#sensorLabel').hide();
-	// 		$('#sensorCombo').hide();
-	// 		$('#sensorValue').hide();
-	// 		$('#unit').hide();
-	// 		$("#gainCombo option[value='3']").remove();
-	// 		$("#gainCombo option[value='4']").remove();
-	// 		$("#gainCombo option[value='5']").remove();
-	// 		$("#gainCombo option[value='6']").remove();
-	// 		break;
-	//     case phidget22.DeviceID.PN_1065:
-    //     case phidget22.DeviceID.VOLTAGE_RATIO_INPUT_PORT:
-	//     case phidget22.DeviceID.PN_1010_1013_1018_1019:
-	//     case phidget22.DeviceID.PN_1011:
-	//     case phidget22.DeviceID.PN_1202_1203:
-	//     case phidget22.DeviceID.PN_DAQ1000:
-	// 		$('#gainCombo').hide();
-	// 		$('#gainLabel').hide();
-	// 		$('#enableLabel').hide();
-	// 		$('#enableBox').hide();
-	// 		break;
-
-	// }
-
-	// $('#ratioField').show();
-	// $('#noAttach').hide();
-	// $('#Attach').show();
-}    
-
 function vi_onAttach(ch) {
     console.log(ch + ' attached');
     // console.log(ch + ch.id +' attached');
@@ -169,8 +64,8 @@ function vi_onAttach(ch) {
     // console.log(ch.id)
     // // ch.setDataInterval(8);
     // // ch.setVoltageChangeTrigger(0.01);
-    // ch.setDataInterval(2000);
-    // ch.setVoltageChangeTrigger(0);
+    ch.setDataInterval(2000);
+    ch.setVoltageRatioChangeTrigger(0);
     
 }
 
@@ -232,26 +127,62 @@ function vi_voltageChange(voltage) {
 		} else{
 			tstep = (current_time - data[ch][0].timeStamp)/1000
         }
-        data[ch].push({"voltage": voltage,
-                    "timeStamp": current_time,
-                    "timeStep": tstep,				   
-                    "degC": +degC.toPrecision(4)})
+        data[ch].push(
+            {
+                "voltage": voltage,
+                "timeStamp": current_time,
+                "timeStep": tstep,
+                "degC": +degC.toPrecision(4)
+            })
 
-        var trace0 = {
-            x: data[0].map(d => d.timeStep),
-            y: data[0].map(d => d.degC),
-            name: "Chanel 0"           
-        }
-        var trace1 = {
-            x: data[1].map(d => d.timeStep),
-            y: data[1].map(d => d.degC),
-            name: "Chanel 1"
-        }                              
+        traces[ch] = {
+                x: data[ch].map(function(d){
+                    switch(time_unit){
+                        case "sec":
+                            dt = d.timeStep;
+                            break;
+                        case "min":
+                            dt = d.timeStep/60;
+                            break;
+                        case "hours":
+                            dt = d.timeStep/3600
+                            break;
+                    }
+                    return dt
+                }),
+                y: data[ch].map(d => d.degC),
+                name: "Channel "+ ch
+            }
+        console.log(traces)
+        // var trace0 = {
+        //     x: data[0].map(function(d){
+        //         switch(time_unit){
+        //             case "sec":
+        //                 dt = d.timeStep;
+        //                 break;
+        //             case "min":
+        //                 dt = d.timeStep/60;
+        //                 break;
+        //             case "hours":
+        //                 dt = d.timeStep/3600
+        //                 break;
+        //         }
+        //         return dt
+        //     }),
+        //     y: data[0].map(d => d.degC),
+        //     name: "Chanel 0"           
+        // }
+        // var trace1 = {
+        //     x: data[1].map(d => d.timeStep),
+        //     y: data[1].map(d => d.degC),
+        //     name: "Chanel 1"
+        // }                              
         var l0 = {
             xaxis:{title:{text: "Time [sec]"}},
             yaxis:{title:{text: "Temperature [degC]"}}
         }
-        Plotly.react("plot", [trace0, trace1], l0) 
+        // Plotly.react("plot", [trace0, trace1], l0) 
+        Plotly.react("plot", traces, l0) 
     }
     console.log(data)
 }
@@ -273,7 +204,12 @@ function onError(arg0, arg1) {
 
 function setLabel(name, value) {
 
-    $('#' + name).text(value);
+    $('#' + name).text(value);    
+}
+
+function unitChange(){
+    console.log($('#unit').val())
+    time_unit = $('#unit').val()
 }
 
 function startLOG(){
