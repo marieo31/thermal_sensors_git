@@ -51,11 +51,11 @@
                     <td><input type='text'  id='di' size='7' value='5'></td>
                     <td><input type='submit' size='9'  id='diButton' onclick='setDI()' value='Set'></td>
                 </tr>
-                <tr>
+                <!-- <tr>
                     <td><label >File label</label></td>
                     <td><input type='text'  id='flabel' size='7' value=''></td>
                     <td><input type='submit' size='9'  id='flabelButton' onclick='setflabel()' value='Set'></td>
-                </tr>
+                </tr> -->
                 <tr>
                     <td><label >Time Unit</label></td>
                     <td>
@@ -99,7 +99,8 @@
                     <td></td><td></td><td></td><td></td>
                     <td><input type="submit" size='12' onclick="clearLOG()" value="Clear"></input></td>
                     <td></td><td></td><td></td><td></td>
-                    <td><input type="submit" size='12' onclick="saveLOG()" value="Download"></input></td>
+                    <td><input type="submit" size='12' onclick="saveLOG()" value="Download" id="saveLOG"></input></td>
+                    <td><input type='text'  id='fname' size='50' value=''></td>
                 </tr>                    
             </table>
             <div id="plot"></div>

@@ -55,7 +55,17 @@ $(document).ready(function() {
 			alert('failed to connect to server:' + err);
         });;
         console.log(p_vi)
+
+
+    // Define the filename
+    var dd = new Date()
+    var fname = dd.toISOString().substr(0, 10)+"_T"+dd.toLocaleTimeString()+"_thermal_sensors.csv"
+    $('#fname').val(fname);
+    document.getElementById("saveLOG").disabled = true;        
     });
+
+
+
 
 function vi_onAttach(ch) {
     console.log(ch + ' attached');
@@ -64,7 +74,7 @@ function vi_onAttach(ch) {
     // console.log(ch.id)
     // // ch.setDataInterval(8);
     // // ch.setVoltageChangeTrigger(0.01);
-    ch.setDataInterval(2000);
+    ch.setDataInterval(1000);
     ch.setVoltageRatioChangeTrigger(0);
     
 }
@@ -92,31 +102,31 @@ function setDI() {
 }
 
 function resetData(data){
-    data = []
+    var data = []
     for(i=0; i<nb_ch;i++){
         data.push([])
     }
-    console.log(data)
-    // return (data);
+    return (data);
 }
 
-function vi_voltageChange(voltage) {
-
+function vi_voltageChange(voltageRatio) {
     // We can access the sender of this event by using the "this" keyword. This lets us know which channel was triggered.
     // var ch = this.channel.index;
     var ch = this.channel.userphid._hubPort;
     // console.log(this.channel.userphid._hubPort)
     // console.log(voltage)
-    console.log(ch)
+    // console.log(ch)
 
     // Update the display in the Voltage Inputs fields
-    $('#vi_voltage_' + ch).val(voltage);
+    $('#vi_voltage_' + ch).val(voltageRatio);
 
     // Calculate the corresponding temperature given the calibration data
-    let degC = voltage*a_calib[ch] + b_calib[ch]
+    let degC = voltageRatio*a_calib[ch] + b_calib[ch]
 
     // Update the display in the Temperature Inputs fields
     $('#vi_temp_' + ch).val(degC.toPrecision(4));
+
+    // console.log("length "+ch+": "+data[ch].length)
 
     // Store the data and update the graph
     if (logging == 1){
@@ -128,10 +138,10 @@ function vi_voltageChange(voltage) {
 			tstep = (current_time - data[ch][0].timeStamp)/1000
         }
         data[ch].push(
-            {
-                "voltage": voltage,
+            {                
                 "timeStamp": current_time,
                 "timeStep": tstep,
+                "voltageRatio": voltageRatio,                
                 "degC": +degC.toPrecision(4)
             })
 
@@ -153,46 +163,16 @@ function vi_voltageChange(voltage) {
                 y: data[ch].map(d => d.degC),
                 name: "Channel "+ ch
             }
-        console.log(traces)
-        // var trace0 = {
-        //     x: data[0].map(function(d){
-        //         switch(time_unit){
-        //             case "sec":
-        //                 dt = d.timeStep;
-        //                 break;
-        //             case "min":
-        //                 dt = d.timeStep/60;
-        //                 break;
-        //             case "hours":
-        //                 dt = d.timeStep/3600
-        //                 break;
-        //         }
-        //         return dt
-        //     }),
-        //     y: data[0].map(d => d.degC),
-        //     name: "Chanel 0"           
-        // }
-        // var trace1 = {
-        //     x: data[1].map(d => d.timeStep),
-        //     y: data[1].map(d => d.degC),
-        //     name: "Chanel 1"
-        // }                              
+        // console.log(traces)                          
         var l0 = {
-            xaxis:{title:{text: "Time [sec]"}},
+            xaxis:{title:{text: "Time ["+time_unit+"]"}},
             yaxis:{title:{text: "Temperature [degC]"}}
-        }
-        // Plotly.react("plot", [trace0, trace1], l0) 
+        }        
         Plotly.react("plot", traces, l0) 
     }
-    console.log(data)
+    // console.log(data)
 }
 
-// function onError(arg0, arg1) {
-
-//     var d = new Date();
-//     $('#errorTable').append('<tr><td> ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds() + '.' + d.getMilliseconds() + '</td><td> 0x' + arg0.toString(16) + '</td><td>' + arg1 + '</td>');
-//     $("#errorField").show();
-// }
 
 function onError(arg0, arg1) {
     console.log("arg0 "+arg0)
@@ -203,8 +183,7 @@ function onError(arg0, arg1) {
 }
 
 function setLabel(name, value) {
-
-    $('#' + name).text(value);    
+    $('#' + name).text(value);
 }
 
 function unitChange(){
@@ -215,16 +194,19 @@ function unitChange(){
 function startLOG(){
     console.log("start logging")
     logging = 1;
+    // disable the saveLOG button (will be active only when stopped)
+    document.getElementById("saveLOG").disabled = true;
 }
 
 function stopLOG(){
-    console.log("stop logging")
+    console.log("stop logging")    
     logging = 0;
+    document.getElementById("saveLOG").disabled = false;
 }
 
 function clearLOG(){
     console.log("Clear data")
-    data = [[],[]];
+    data = resetData();
     clearPlot();
 }
 
@@ -238,4 +220,73 @@ function clearPlot(){
         yaxis:{title:{text: "Values"}}
     }
     Plotly.newPlot("plot", [d0], l0);
+}
+
+function saveLOG(){
+
+    downloadCSV(data,$('#fname').val())
+
+}
+
+function convertArrayOfObjectsToCSV_2D(data){ //args) {  
+    var result, ctr, keys, columnDelimiter, lineDelimiter //, data;
+	if (data == null || !data.length) {
+		return null;
+	}    
+
+    // Define the max nb of rows
+    var nb_rows = data.map(d => d.length)
+    var max_nb_rows = Math.max(...nb_rows)
+    // console.log(nb_rows)    
+	columnDelimiter = ', ';
+    lineDelimiter = '\n';
+    
+    // Set the first line --> the keys of each array annotated with the chanel nb
+    result = '';
+    ctr = 0;
+    for(i=0;i<nb_ch;i++){
+        if (ctr > 0) result +=columnDelimiter;
+        kk = Object.keys(data[i][0]).map(k => k+"_"+i);
+        result += kk.join(columnDelimiter);
+        ctr++; 
+    }
+    result += lineDelimiter;  
+    
+    // Add the rows
+    keys = Object.keys(data[0][0])
+    for(r=0;r<max_nb_rows;r++){
+        ctr = 0;
+        for(i=0;i<nb_ch;i++){
+            keys.forEach(function(key){
+                if (ctr > 0) result +=columnDelimiter;
+                result += data[i][r][key];
+                ctr++;
+            })
+        }
+        result += lineDelimiter;
+    }
+    // console.log(result)
+    return result;    
+}
+
+
+function downloadCSV(data, filename) {
+    console.log("Download_csv")
+	// var data, filename, link;
+	var link;
+    // var csv = convertArrayOfObjectsToCSV(data[0]);
+	var csv = convertArrayOfObjectsToCSV_2D(data);    
+	if (csv == null) return;
+
+	// filename = args.filename || 'export.csv';
+
+	if (!csv.match(/^data:text\/csv/i)) {
+		csv = 'data:text/csv;charset=utf-8,' + csv;
+	}
+	data = encodeURI(csv);
+
+	link = document.createElement('a');
+	link.setAttribute('href', data);
+	link.setAttribute('download', filename);
+	link.click();
 }
