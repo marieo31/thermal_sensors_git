@@ -1,15 +1,16 @@
 
 // Variables
 var p_vi = [];  // List of chanels
-var nb_ch = 2;  // nb of active chanels
+var nb_ch = 6;  // nb of active chanels
 var logging;    // boolean to enable data saving
 var data = []   // List of datasets
 var traces = [] // List of traces for the plots
 var time_unit = "sec"   // units of the plot
+var pp = 0;
 
 // Calibration coefficients for each chanel
-var a_calib = [222.2, 222.2];
-var b_calib = [-61.111, -61.111];
+var a_calib = [222.2, 222.2, 222.2, 222.2, 222.2, 222.2];
+var b_calib = [-61.111, -61.111, -61.111, -61.111, -61.111, -61.111];
 
 // Establish the connection
 $(document).ready(function() {
@@ -59,7 +60,7 @@ $(document).ready(function() {
 
     // Define the filename
     var dd = new Date()
-    var fname = dd.toISOString().substr(0, 10)+"_T"+dd.toLocaleTimeString()+"_thermal_sensors.csv"
+    var fname = dd.toISOString().substr(0, 10)+"_T"+dd.toLocaleTimeString()+"_thermal_sensors"
     $('#fname').val(fname);
     document.getElementById("saveLOG").disabled = true;        
     });
@@ -74,12 +75,13 @@ function vi_onAttach(ch) {
     // console.log(ch.id)
     // // ch.setDataInterval(8);
     // // ch.setVoltageChangeTrigger(0.01);
-    ch.setDataInterval(1000);
+    ch.setDataInterval(parseInt($('#di').val())*1000);
     ch.setVoltageRatioChangeTrigger(0);
     
 }
 
 function setDI() {
+    console.log("Set the data interval")
     // Set the data interval
 	var di = parseInt($('#di').val())*1000; // convert seconds to milliseconds
 	if (di === NaN)
@@ -130,6 +132,18 @@ function vi_voltageChange(voltageRatio) {
 
     // Store the data and update the graph
     if (logging == 1){
+
+        // Definition of a threshold length for the data
+        // if the nb of rows reach that value, we force the download of the data
+        // and we remove part of the dataset
+        if (data[ch].length >10){
+            console.log(pp)
+            console.log($('#fname').val()+"_part_"+pp)
+            downloadCSV(data,$('#fname').val()+"_part_"+pp);
+            pp++;
+            clearLOG();
+        }
+
         // Store the current step in the dataset
         current_time =  new Date().getTime()
 		if (data[ch].length === 0){
@@ -196,6 +210,7 @@ function startLOG(){
     logging = 1;
     // disable the saveLOG button (will be active only when stopped)
     document.getElementById("saveLOG").disabled = true;
+    pp = 0;
 }
 
 function stopLOG(){
@@ -287,6 +302,6 @@ function downloadCSV(data, filename) {
 
 	link = document.createElement('a');
 	link.setAttribute('href', data);
-	link.setAttribute('download', filename);
+	link.setAttribute('download', filename+".csv");
 	link.click();
 }
