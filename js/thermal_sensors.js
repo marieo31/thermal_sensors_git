@@ -10,7 +10,7 @@ var pp = 0;
 
 // Calibration coefficients for each chanel
 var a_calib = [222.2, 222.2, 222.2, 222.2, 222.2, 222.2];
-var b_calib = [-61.111, -61.111, -61.111, -61.111, -61.111, -61.111];
+var b_calib = [-59.626, -58.928, -58.309, -60.162, -59.917, -59.536];
 
 // Establish the connection
 $(document).ready(function() {
@@ -88,8 +88,9 @@ function setDI() {
         return (false);
         
     // the data interval is set for all the sensors at once (the minimun is 2 seconds)
-	if (di < 2000) {
-		di = p_vi[0].getMinDataInterval();
+	if (di < 1000) {
+        // di = p_vi[0].getMinDataInterval();
+        di = 1000;
 		$('#di').val(di/1000);
 	}    
 	if (di > p_vi[0].getMaxDataInterval()) {
@@ -136,7 +137,7 @@ function vi_voltageChange(voltageRatio) {
         // Definition of a threshold length for the data
         // if the nb of rows reach that value, we force the download of the data
         // and we remove part of the dataset
-        if (data[ch].length >10){
+        if (data[ch].length >2000){
             console.log(pp)
             console.log($('#fname').val()+"_part_"+pp)
             downloadCSV(data,$('#fname').val()+"_part_"+pp);
