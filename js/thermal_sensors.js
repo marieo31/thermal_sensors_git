@@ -275,9 +275,11 @@ function convertArrayOfObjectsToCSV_2D(data){ //args) {
         for(i=0;i<nb_ch;i++){
             keys.forEach(function(key){
                 if (ctr > 0) result +=columnDelimiter;
+                // Adding a try-catch statement if there is not the same number of rows for each sensor
+                // there might be a little delay between the timestep of each sensor
                 try{
                     result += data[i][r][key];
-                    console.log(data[i][r][key])
+                    // console.log(data[i][r][key])
                 }
                 catch(err){
                     console.log(err.message)
