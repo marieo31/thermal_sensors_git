@@ -275,7 +275,14 @@ function convertArrayOfObjectsToCSV_2D(data){ //args) {
         for(i=0;i<nb_ch;i++){
             keys.forEach(function(key){
                 if (ctr > 0) result +=columnDelimiter;
-                result += data[i][r][key];
+                try{
+                    result += data[i][r][key];
+                    console.log(data[i][r][key])
+                }
+                catch(err){
+                    console.log(err.message)
+                    result += NaN
+                }
                 ctr++;
             })
         }
